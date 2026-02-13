@@ -2,7 +2,7 @@
 
 specVersion: "4.0"
 metadata:
-  name: com.yteria.workzoneroleoverviewfrontend
+  name: com.yteria.overviewworkzone
 type: application
 server:
   customMiddleware:

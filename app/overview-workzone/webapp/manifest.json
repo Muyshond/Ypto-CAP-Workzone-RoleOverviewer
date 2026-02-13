@@ -1,7 +1,7 @@
 {
   "_version": "1.81.0",
   "sap.app": {
-    "id": "com.yteria.workzoneroleoverviewfrontend",
+    "id": "com.yteria.overviewworkzone",
     "type": "application",
     "i18n": "i18n/i18n.properties",
     "applicationVersion": {
@@ -13,7 +13,7 @@
     "sourceTemplate": {
       "id": "@sap/generator-fiori:basic",
       "version": "1.20.2",
-      "toolsId": "3c19eb2f-4d38-4e7c-ae7c-70d9beecb722"
+      "toolsId": "8f6a16c9-af40-41e2-9f43-c6e283356837"
     },
     "dataSources": {
       "mainService": {
@@ -59,7 +59,7 @@
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
-          "bundleName": "com.yteria.workzoneroleoverviewfrontend.i18n.i18n"
+          "bundleName": "com.yteria.overviewworkzone.i18n.i18n"
         }
       },
       "": {
@@ -87,9 +87,9 @@
         "transition": "slide",
         "type": "View",
         "viewType": "XML",
-        "path": "com.yteria.workzoneroleoverviewfrontend.view",
+        "path": "com.yteria.overviewworkzone.view",
         "async": true,
-        "viewPath": "com.yteria.workzoneroleoverviewfrontend.view"
+        "viewPath": "com.yteria.overviewworkzone.view"
       },
       "routes": [
         {
@@ -108,7 +108,7 @@
       }
     },
     "rootView": {
-      "viewName": "com.yteria.workzoneroleoverviewfrontend.view.App",
+      "viewName": "com.yteria.overviewworkzone.view.App",
       "type": "XML",
       "id": "App",
       "async": true

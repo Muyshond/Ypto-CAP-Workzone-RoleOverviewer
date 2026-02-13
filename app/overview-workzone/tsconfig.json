@@ -11,7 +11,7 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "com/yteria/workzoneroleoverviewfrontend/*": [
+      "com/yteria/overviewworkzone/*": [
         "./webapp/*"
       ]
     },

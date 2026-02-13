@@ -1,2 +1,3 @@
 
-using from './workzone-role-overview-frontend/annotations';
+
+using from './overview-workzone/annotations';

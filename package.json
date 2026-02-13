@@ -10,10 +10,17 @@
   },
   "devDependencies": {
     "@cap-js/sqlite": "^2",
-    "@sap/cds-dk": "^9"
+    "@sap/cds-dk": "^9",
+    "cds-plugin-ui5": "^0.13.0",
+    "rimraf": "^5.0.5",
+    "mbt": "^1.2.29"
   },
   "scripts": {
-    "start": "cds-serve"
+    "start": "cds-serve",
+    "watch-overview-workzone": "cds watch --open com.yteria.overviewworkzone/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "undeploy": "cf undeploy workzone-role-overviewer --delete-services --delete-service-keys --delete-service-brokers",
+    "build": "rimraf resources mta_archives && mbt build --mtar archive",
+    "deploy": "cf deploy mta_archives/archive.mtar --retries 1"
   },
   "private": true,
   "cds": {
@@ -24,5 +31,8 @@
       "destinations": true,
       "html5-repo": true
     }
-  }
+  },
+  "workspaces": [
+    "app/*"
+  ]
 }
