@@ -6,18 +6,19 @@
     "@sap-cloud-sdk/http-client": "^4.4.0",
     "@sap/cds": "^9",
     "@sap/xssec": "^4",
+    "adm-zip": "^0.5.16",
     "express": "^4"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^2",
     "@sap/cds-dk": "^9",
     "cds-plugin-ui5": "^0.13.0",
-    "rimraf": "^5.0.5",
-    "mbt": "^1.2.29"
+    "mbt": "^1.2.29",
+    "rimraf": "^5.0.5"
   },
   "scripts": {
     "start": "cds-serve",
-    "watch-overview-workzone": "cds watch --open com.yteria.overviewworkzone/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-overview-workzone": "cds watch --open be.nmbs.overviewworkzone/index.html?sap-ui-xx-viewCache=false --livereload false",
     "undeploy": "cf undeploy workzone-role-overviewer --delete-services --delete-service-keys --delete-service-brokers",
     "build": "rimraf resources mta_archives && mbt build --mtar archive",
     "deploy": "cf deploy mta_archives/archive.mtar --retries 1"

@@ -2,7 +2,7 @@
 
 specVersion: "4.0"
 metadata:
-  name: com.yteria.overviewworkzone
+  name: be.nmbs.overviewworkzone
 type: application
 server:
   customMiddleware:

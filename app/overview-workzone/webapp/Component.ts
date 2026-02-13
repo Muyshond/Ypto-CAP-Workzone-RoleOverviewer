@@ -2,7 +2,7 @@ import BaseComponent from "sap/ui/core/UIComponent";
 import { createDeviceModel } from "./model/models";
 
 /**
- * @namespace com.yteria.overviewworkzone
+ * @namespace be.nmbs.overviewworkzone
  */
 export default class Component extends BaseComponent {
 

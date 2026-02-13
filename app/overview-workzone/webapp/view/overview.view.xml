@@ -1,4 +1,4 @@
-<mvc:View controllerName="com.yteria.overviewworkzone.controller.overview"
+<mvc:View controllerName="be.nmbs.overviewworkzone.controller.overview"
     xmlns="sap.m"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:core="sap.ui.core"

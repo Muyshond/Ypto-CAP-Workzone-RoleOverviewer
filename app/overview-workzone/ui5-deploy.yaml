@@ -2,7 +2,7 @@
 
 specVersion: "4.0"
 metadata:
-  name: com.yteria.overviewworkzone
+  name: be.nmbs.overviewworkzone
 type: application
 builder:
   customTasks:
@@ -15,7 +15,7 @@ builder:
     - name: ui5-task-zipper
       afterTask: generateCachebusterInfo
       configuration:
-        archiveName: comyteriaoverviewworkzone
+        archiveName: benmbsoverviewworkzone
         relativePaths: true
         additionalFiles:
           - xs-app.json

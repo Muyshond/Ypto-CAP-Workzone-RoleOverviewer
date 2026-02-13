@@ -1,7 +1,7 @@
 import Controller from "sap/ui/core/mvc/Controller";
 
 /**
- * @namespace com.yteria.overviewworkzone.controller
+ * @namespace be.nmbs.overviewworkzone.controller
  */
 export default class App extends Controller {
 

@@ -4,7 +4,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 
 /**
- * @namespace com.yteria.overviewworkzone.controller
+ * @namespace be.nmbs.overviewworkzone.controller
  */
 export default class overview extends Controller {
 
@@ -31,8 +31,7 @@ export default class overview extends Controller {
             var isLocal: boolean = window.location.hostname === "localhost" || 
                                      window.location.hostname === "127.0.0.1" ||
                                      window.location.port === "4004";
-            isLocal = true
-           
+            
             const sPath = isLocal ? "/analyzeExport(...)" : "/analyzeFromDestination(...)";
             
             console.log(`Binding to path: ${sPath}`);
