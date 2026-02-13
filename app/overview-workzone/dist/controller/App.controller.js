@@ -1,0 +1,2 @@
+sap.ui.define(["sap/ui/core/mvc/Controller"],function(n){"use strict";const e=n.extend("be.nmbs.overviewworkzone.controller.App",{onInit:function n(){}});return e});
+//# sourceMappingURL=App.controller.js.map

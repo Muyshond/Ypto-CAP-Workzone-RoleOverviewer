@@ -2,91 +2,128 @@ _schema-version: 3.3.0
 ID: workzone-role-overviewer
 description: A simple CAP project.
 version: 1.0.0
+
 modules:
-- name: workzone-role-overviewer-srv
-  type: nodejs
-  path: gen/srv
-  requires:
-  - name: workzone-role-overviewer-auth
-  - name: workzone-role-overviewer-destination
-  provides:
-  - name: srv-api
-    properties:
-      srv-url: ${default-url}
-  parameters:
-    buildpack: nodejs_buildpack
-    instances: 1
-  build-parameters:
-    builder: npm-ci
-- name: workzone-role-overviewer-app-deployer
-  type: com.sap.application.content
-  path: gen
-  requires:
-  - name: workzone-role-overviewer-auth
-  - name: srv-api
-  - name: workzone-role-overviewer-html5-repo-host
-    parameters:
-      config:
-        HTML5Runtime_enabled: true
-      content-target: true
-  build-parameters:
-    build-result: app/
+  - name: workzone-role-overviewer-srv
+    type: nodejs
+    path: gen/srv
     requires:
-    - artifacts:
-      - comyteriaoverviewworkzone.zip
-      name: comyteriaoverviewworkzone
-      target-path: app/
-- name: comyteriaoverviewworkzone
-  type: html5
-  path: app/overview-workzone
-  build-parameters:
-    build-result: dist
-    builder: custom
-    commands:
-    - npm install
-    - npm run build:cf
-    supported-platforms: []
-resources:
-- name: workzone-role-overviewer-auth
-  type: org.cloudfoundry.managed-service
-  parameters:
-    config:
-      oauth2-configuration:
-        credential-types:
-        - binding-secret
-        - x509
-      tenant-mode: dedicated
-      xsappname: workzone-role-overviewer-${org}-${space}
-    path: ./xs-security.json
-    service: xsuaa
-    service-plan: application
-- name: workzone-role-overviewer-destination
-  type: org.cloudfoundry.managed-service
-  parameters:
-    config:
-      HTML5Runtime_enabled: false
-      init_data:
+      - name: workzone-role-overviewer-auth
+      - name: workzone-role-overviewer-destination
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+    parameters:
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm-ci
+
+  - name: benmbsoverviewworkzone
+    type: html5
+    path: app/overview-workzone
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build:cf 
+      supported-platforms: []
+
+  - name: workzone-role-overviewer-app-content
+    type: com.sap.application.content
+    path: .
+    requires:
+      - name: workzone-role-overviewer-html5-repo-host
+        parameters:
+          content-target: true
+    build-parameters:
+      build-result: resources
+      requires:
+        - artifacts:
+            - benmbsoverviewworkzone.zip
+          name: benmbsoverviewworkzone
+          target-path: resources/
+
+  - name: workzone-role-overviewer-destination-content
+    type: com.sap.application.content
+    requires:
+      - name: workzone-role-overviewer-destination
+        parameters:
+          content-target: true
+      - name: workzone-role-overviewer-html5-repo-host
+        parameters:
+          service-key:
+            name: workzone-role-overviewer-html5-key
+      - name: workzone-role-overviewer-auth
+        parameters:
+          service-key:
+            name: workzone-role-overviewer-auth-key
+    parameters:
+      content:
         instance:
           destinations:
-          - Authentication: NoAuthentication
-            Name: ui5
-            ProxyType: Internet
-            Type: HTTP
-            URL: https://ui5.sap.com
+            - Name: workzone_overview_repo_host
+              ServiceInstanceName: workzone-role-overviewer-html5-host
+              ServiceKeyName: workzone-role-overviewer-html5-key
+              sap.cloud.service: workzone.overview
+            - Authentication: OAuth2UserTokenExchange
+              Name: workzone_overview_auth
+              ServiceInstanceName: workzone-role-overviewer-auth
+              ServiceKeyName: workzone-role-overviewer-auth-key
+              sap.cloud.service: workzone.overview
           existing_destinations_policy: update
-    service: destination
-    service-plan: lite
-- name: workzone-role-overviewer-html5-repo-host
-  type: org.cloudfoundry.managed-service
-  parameters:
-    service: html5-apps-repo
-    service-plan: app-host
+    build-parameters:
+      no-source: true
+
+resources:
+  - name: workzone-role-overviewer-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+
+  - name: workzone-role-overviewer-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite
+      config:
+        HTML5Runtime_enabled: true
+        init_data:
+          instance:
+            destinations:
+              - Name: ui5
+                URL: https://ui5.sap.com
+                ProxyType: Internet
+                Type: HTTP
+                Authentication: NoAuthentication
+              - Name: workzone-srv-api
+                URL: ~{srv-api/srv-url}
+                ProxyType: Internet
+                Type: HTTP
+                Authentication: NoAuthentication
+                HTML5.DynamicDestination: true
+                HTML5.ForwardAuthToken: true
+            existing_destinations_policy: update
+    requires:
+      - name: srv-api
+
+  - name: workzone-role-overviewer-html5-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-name: workzone-role-overviewer-html5-host
+      service-plan: app-host
+
 parameters:
   deploy_mode: html5-repo
   enable-parallel-deployments: true
+
 build-parameters:
   before-all:
-  - builder: custom
-    commands:
-    - npm ci
-    - npx cds build --production
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production

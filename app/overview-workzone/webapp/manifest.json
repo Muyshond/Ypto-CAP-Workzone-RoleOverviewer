@@ -1,11 +1,11 @@
 {
   "_version": "1.81.0",
   "sap.app": {
-    "id": "com.yteria.overviewworkzone",
+    "id": "be.nmbs.overviewworkzone",
     "type": "application",
     "i18n": "i18n/i18n.properties",
     "applicationVersion": {
-      "version": "0.0.1"
+      "version": "0.1.1"
     },
     "title": "{{appTitle}}",
     "description": "{{appDescription}}",
@@ -59,7 +59,7 @@
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
-          "bundleName": "com.yteria.overviewworkzone.i18n.i18n"
+          "bundleName": "be.nmbs.overviewworkzone.i18n.i18n"
         }
       },
       "": {
@@ -87,9 +87,9 @@
         "transition": "slide",
         "type": "View",
         "viewType": "XML",
-        "path": "com.yteria.overviewworkzone.view",
+        "path": "be.nmbs.overviewworkzone.view",
         "async": true,
-        "viewPath": "com.yteria.overviewworkzone.view"
+        "viewPath": "be.nmbs.overviewworkzone.view"
       },
       "routes": [
         {
@@ -108,7 +108,7 @@
       }
     },
     "rootView": {
-      "viewName": "com.yteria.overviewworkzone.view.App",
+      "viewName": "be.nmbs.overviewworkzone.view.App",
       "type": "XML",
       "id": "App",
       "async": true
