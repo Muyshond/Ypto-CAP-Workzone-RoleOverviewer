@@ -21,7 +21,9 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
         return;
       }
       try {
-        var isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.port === "4004";
+        const hostname = window.location.hostname;
+        var isLocal = hostname.includes("localhost") || hostname.includes("port") || hostname.includes("4004");
+        //isLocal = true
         const sPath = isLocal ? "/analyzeExport(...)" : "/analyzeFromDestination(...)";
         console.log(`Binding to path: ${sPath}`);
         const oBinding = oModel.bindContext(sPath);
