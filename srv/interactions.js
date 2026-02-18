@@ -38,7 +38,7 @@ module.exports = cds.service.impl(async function() {
             
             const response = await executeHttpRequest(dest, {
                 method: 'GET',
-                url: '/v1/export/site(siteID="1af031d9-9029-49a0-9ab5-f880ce5118bb")',
+                url: '/cdm_export_service/v1/export/site(siteID=\'1af031d9-9029-49a0-9ab5-f880ce5118bb\')',
                 responseType: 'arraybuffer' 
             });
 
