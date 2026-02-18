@@ -30,7 +30,13 @@
         "auth": "xsuaa"
       },
       "destinations": true,
-      "html5-repo": true
+      "html5-repo": true,
+      "workzone-api": {
+        "kind": "rest",
+        "credentials": {
+          "destination": "workzone-api"
+        }
+      }
     }
   },
   "workspaces": [
