@@ -4,177 +4,231 @@
     xmlns:core="sap.ui.core"
     xmlns:table="sap.ui.table"
     displayBlock="true">
-<Page title="SAP Workzone - Role Hierarchy Analysis" class="sapUiResponsiveContentPadding">
+    
+    <Page title="SAP Workzone - Role Hierarchy Analysis" class="sapUiResponsiveContentPadding">
         <content>
             <VBox>
                 <Panel headerText="Overview Statistics" class="sapUiResponsiveMargin">
                     <content>
                         <HBox justifyContent="SpaceBetween" class="sapUiSmallMargin">
-                            <VBox class="sapUiSmallMarginEnd">
-                                <ObjectStatus 
-                                    title="Total Roles" 
-                                    text="{/statistics/totalRoles}"
-                                    state="None"
-                                    inverted="true"/>
+                            <VBox class="sapUiSmallMarginEnd" width="24%">
+                                <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                                    <core:Icon src="sap-icon://role" color="#000000" size="2rem" class="sapUiTinyMarginEnd"/>
+                                    <VBox>
+                                        <Text text="Roles" class="sapUiTinyText"/>
+                                        <Title text="{/statistics/totalRoles}" level="H2"/>
+                                    </VBox>
+                                </HBox>
                             </VBox>
-                            <VBox class="sapUiSmallMarginEnd">
-                                <ObjectStatus 
-                                    title="Total Spaces" 
-                                    text="{/statistics/totalSpaces}"
-                                    state="Information"
-                                    inverted="true"/>
+                            
+                            <VBox class="sapUiSmallMarginEnd" width="24%">
+                                <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                                    <core:Icon src="sap-icon://home" color="#0070F2" size="2rem" class="sapUiTinyMarginEnd"/>
+                                    <VBox>
+                                        <Text text="Spaces" class="sapUiTinyText"/>
+                                        <Title text="{/statistics/totalSpaces}" level="H2"/>
+                                    </VBox>
+                                </HBox>
                             </VBox>
-                            <VBox class="sapUiSmallMarginEnd">
-                                <ObjectStatus 
-                                    title="Total Pages" 
-                                    text="{/statistics/totalPages}"
-                                    state="Warning"
-                                    inverted="true"/>
+                            
+                            <VBox class="sapUiSmallMarginEnd" width="24%">
+                                <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                                    <core:Icon src="sap-icon://document" color="#6C6C6C" size="2rem" class="sapUiTinyMarginEnd"/>
+                                    <VBox>
+                                        <Text text="Pages" class="sapUiTinyText"/>
+                                        <Title text="{/statistics/totalPages}" level="H2"/>
+                                    </VBox>
+                                </HBox>
                             </VBox>
-                            <VBox>
-                                <ObjectStatus 
-                                    title="Total Apps" 
-                                    text="{/statistics/totalApps}"
-                                    state="Success"
-                                    inverted="true"/>
+                            
+                            <VBox width="24%">
+                                <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                                    <core:Icon src="sap-icon://product" color="#32363A" size="2rem" class="sapUiTinyMarginEnd"/>
+                                    <VBox>
+                                        <Text text="Apps" class="sapUiTinyText"/>
+                                        <Title text="{/statistics/totalApps}" level="H2"/>
+                                    </VBox>
+                                </HBox>
                             </VBox>
                         </HBox>
                     </content>
                 </Panel>
 
-                <Toolbar class="sapUiTinyMarginTop">
+                <OverflowToolbar class="sapUiTinyMarginTop">
                     <SearchField 
                         id="searchField"
                         placeholder="Search by ID, Name, Type or Provider..."
                         search=".onSearch"
+                        liveChange=".onSearch"
                         width="40%"
                         showRefreshButton="true"/>
+                    
                     <ToolbarSpacer/>
-                    <Button 
-                        text="Expand All" 
-                        icon="sap-icon://open-command-field"
-                        press=".onExpandAll"
-                        type="Transparent"/>
-                    <Button 
-                        text="Collapse All" 
-                        icon="sap-icon://close-command-field"
-                        press=".onCollapseAll"
-                        type="Transparent"/>
-                    <ToolbarSeparator/>
+                    
+                    <Label text="Filter:" class="sapUiTinyMarginEnd"/>
                     <ComboBox
                         id="typeFilter"
-                        placeholder="Filter by Type"
+                        placeholder="All Types"
                         width="150px"
-                        selectionChange=".onTypeFilterChange"
-                        items="{
-                            path: '/typeFilters'
-                        }">
-                        <core:Item key="{key}" text="{text}"/>
+                        selectionChange=".onTypeFilterChange">
+                        <items>
+                            <core:Item key="all" text="All Types"/>
+                            <core:Item key="role" text="Roles"/>
+                            <core:Item key="space" text="Spaces"/>
+                            <core:Item key="page" text="Pages"/>
+                            <core:Item key="app" text="Apps"/>
+                        </items>
                     </ComboBox>
-                </Toolbar>
+                    
+                    
+                   
+                </OverflowToolbar>
 
                 <table:TreeTable
-    id="roleTree"
-    title="Workzone"
-    rows="{
-        path: '/roles',
-        parameters: {
-            arrayNames: ['children']
-        }
-    }"
-    selectionMode="None"
-    enableColumnReordering="false"
-    visibleRowCount="20"
-    minAutoRowCount="10"
-    width="100%"
-    rowHeight="40"
-    columnHeaderHeight="40">
-    
-    <table:columns>
-        <table:Column width="35rem" sortProperty="title" filterProperty="title" autoResizable="true">
-            <Label text="ID"/>
-            <table:template>
-                <HBox alignItems="Center">
-                    <core:Icon 
-                        src="{= ${type} === 'role' ? 'sap-icon://role' : 
-                               ${type} === 'space' ? 'sap-icon://home' : 
-                               ${type} === 'page' ? 'sap-icon://document' : 
-                               'sap-icon://product' }"
-                        color="{= ${type} === 'role' ? '#000000' : 
-                                  ${type} === 'space' ? '#0070F2' : 
-                                  ${type} === 'page' ? '#6C6C6C' : 
-                                  '#32363A' }"
-                        class="sapUiTinyMarginEnd"/>
-                    <VBox>
-                        <Text text="{id}" wrapping="false"/>
-                    </VBox>
-                </HBox>
-            </table:template>
-        </table:Column>
+                    id="roleTree"
+                    rows="{
+                        path: '/roles',
+                        parameters: {
+                            arrayNames: ['children']
+                        }
+                    }"
+                    selectionMode="None"
+                    enableColumnReordering="false"
+                    visibleRowCount="25"
+                    minAutoRowCount="10"
+                    width="100%"
+                    rowHeight="48"
+                    alternateRowColors="true"
+                    class="sapUiSmallMarginTop">
+                    
+                    <table:extension>
+                        <OverflowToolbar>
+                            <Title text="Workzone Hierarchy" level="H3"/>
+                            <ToolbarSpacer/>
+                            <Text text="{= ${/roles}.length } roles loaded"/>
+                        </OverflowToolbar>
+                    </table:extension>
+                    
+                    <table:columns>
+                        <table:Column width="30rem" sortProperty="id" filterProperty="id">
+                            <Label text="ID" design="Bold"/>
+                            <table:template>
+                                <HBox 
+                                    alignItems="Center"
+                                    class="{= ${highlighted} ? 'highlightedRow' : '' }">
+                                    <core:Icon 
+                                        src="{= ${type} === 'role' ? 'sap-icon://role' : 
+                                               ${type} === 'space' ? 'sap-icon://home' : 
+                                               ${type} === 'page' ? 'sap-icon://document' : 
+                                               'sap-icon://product' }"
+                                        color="{= ${highlighted} ? '#FFA500' : 
+                                                  ${type} === 'role' ? '#000000' : 
+                                                  ${type} === 'space' ? '#0070F2' : 
+                                                  ${type} === 'page' ? '#6C6C6C' : 
+                                                  '#32363A' }"
+                                        size="1.2rem"
+                                        class="sapUiTinyMarginEnd"/>
+                                    <Text 
+                                        text="{id}" 
+                                        wrapping="false">
+                                        <customData>
+                                            <core:CustomData 
+                                                key="style" 
+                                                value="{= ${highlighted} ? 'font-weight:700;background:#FFF3CD;padding:0.25rem;border-radius:3px;' : ${type} === 'role' ? 'font-weight:600;' : '' }"/>
+                                        </customData>
+                                    </Text>
+                                </HBox>
+                            </table:template>
+                        </table:Column>
 
-        <table:Column width="15rem" sortProperty="title" filterProperty="title" autoResizable="true">
-            <Label text="Name"/>
-            <table:template>
-                <ObjectStatus text="{title}" />
-            </table:template>
-        </table:Column>
-        
-        <table:Column width="8rem" sortProperty="type" filterProperty="type">
-            <Label text="Type"/>
-            <table:template>
-                <ObjectStatus 
-                    text="{type}"
-                    state="{= ${type} === 'role' ? 'None' : 
-                             ${type} === 'space' ? 'Information' : 
-                             ${type} === 'page' ? 'Warning' : 
-                             'Success' }"/>
-            </table:template>
-        </table:Column>
-
-        <table:Column width="10rem" hAlign="Center" sortProperty="spaceCount">
-            <Label text="Spaces"/>
-            <table:template>
-                <ObjectNumber
-                    number="{spaceCount}"
-                    visible="{= ${type} === 'role' }"
-                    emphasized="true"
-                    state="{= ${spaceCount} > 0 ? 'Success' : 'None' }"/>
-            </table:template>
-        </table:Column>
-        
-        <table:Column width="10rem" hAlign="Center" sortProperty="pageCount">
-            <Label text="Pages"/>
-            <table:template>
-                <ObjectNumber
-                    number="{= ${type} === 'role' ? ${totalPages} : ${pageCount} }"
-                    visible="{= ${type} === 'role' || ${type} === 'space' }"
-                    emphasized="true"
-                    state="{= (${totalPages} || ${pageCount}) > 0 ? 'Success' : 'None' }"/>
-            </table:template>
-        </table:Column>
-        
-        <table:Column width="10rem" hAlign="Center" sortProperty="appCount">
-            <Label text="Apps"/>
-            <table:template>
-                <ObjectNumber
-                    number="{= ${type} === 'role' ? ${totalApps} : ${appCount} }"
-                    visible="{= ${type} !== 'app' }"
-                    emphasized="true"
-                    state="{= (${totalApps} || ${appCount}) > 0 ? 'Success' : 'None' }"/>
-            </table:template>
-        </table:Column>
-        
-        <table:Column width="12rem" sortProperty="providerId" filterProperty="providerId">
-            <Label text="Provider"/>
-            <table:template>
-                <Text 
-                    text="{= ${type} === 'role' ? (${providerId} ? ${providerId} : 'BTP') : '' }" 
-                    visible="{= ${type} === 'role' }"
-                    wrapping="false"/>
-            </table:template>
-        </table:Column>
-    </table:columns>
-</table:TreeTable>
+                        <table:Column width="15rem" sortProperty="title" filterProperty="title">
+                            <Label text="Name" design="Bold"/>
+                            <table:template>
+                                <Text 
+                                    text="{title}" 
+                                    wrapping="false">
+                                    <customData>
+                                        <core:CustomData 
+                                            key="style" 
+                                            value="{= ${highlighted} ? 'font-weight:600;background:#FFF3CD;padding:0.25rem;border-radius:3px;' : ${type} === 'role' ? 'font-weight:500;' : '' }"/>
+                                    </customData>
+                                </Text>
+                            </table:template>
+                        </table:Column>
+                        
+                        <table:Column width="8rem" hAlign="Center" sortProperty="type" filterProperty="type">
+                            <Label text="Type" design="Bold"/>
+                            <table:template>
+                                <ObjectStatus 
+                                    text="{type}"
+                                    state="{= ${type} === 'role' ? 'None' : 
+                                             ${type} === 'space' ? 'Information' : 
+                                             ${type} === 'page' ? 'Warning' : 
+                                             'Success' }"
+                                    icon="{= ${type} === 'role' ? 'sap-icon://role' : 
+                                            ${type} === 'space' ? 'sap-icon://home' : 
+                                            ${type} === 'page' ? 'sap-icon://document' : 
+                                            'sap-icon://product' }"/>
+                            </table:template>
+                        </table:Column>
+                        
+                        <table:Column width="8rem" hAlign="Center" sortProperty="spaceCount">
+                            <Label text="Spaces" design="Bold"/>
+                            <table:template>
+                                <ObjectNumber
+                                    number="{spaceCount}"
+                                    visible="{= ${type} === 'role' }"
+                                    emphasized="true"
+                                    state="{= ${spaceCount} > 0 ? 'Information' : 'None' }"/>
+                            </table:template>
+                        </table:Column>
+                        
+                        <table:Column width="8rem" hAlign="Center" sortProperty="pageCount">
+                            <Label text="Pages" design="Bold"/>
+                            <table:template>
+                                <ObjectNumber
+                                    number="{= ${type} === 'role' ? ${totalPages} : ${pageCount} }"
+                                    visible="{= ${type} === 'role' || ${type} === 'space' }"
+                                    emphasized="true"
+                                    state="{= (${totalPages} || ${pageCount}) > 0 ? 'Warning' : 'None' }"/>
+                            </table:template>
+                        </table:Column>
+                        
+                        <table:Column width="8rem" hAlign="Center" sortProperty="appCount">
+                            <Label text="Apps" design="Bold"/>
+                            <table:template>
+                                <ObjectNumber
+                                    number="{= ${type} === 'role' ? ${totalApps} : ${appCount} }"
+                                    visible="{= ${type} !== 'app' }"
+                                    emphasized="true"
+                                    state="{= (${totalApps} || ${appCount}) > 0 ? 'Success' : 'None' }"/>
+                            </table:template>
+                        </table:Column>
+                        
+                        <table:Column width="12rem" sortProperty="providerId" filterProperty="providerId">
+                            <Label text="Provider" design="Bold"/>
+                            <table:template>
+                                <HBox visible="{= ${type} === 'role' }" alignItems="Center">
+                                    <core:Icon 
+                                        src="sap-icon://supplier"
+                                        size="1rem"
+                                        color="#5E696E"
+                                        class="sapUiTinyMarginEnd"
+                                        visible="{= !!${providerId} }"/>
+                                    <Text 
+                                        text="{= ${providerId} ? ${providerId} : 'BTP' }" 
+                                        wrapping="false">
+                                        <customData>
+                                            <core:CustomData 
+                                                key="style" 
+                                                value="font-size:0.875rem;color:#6a6d70;"/>
+                                        </customData>
+                                    </Text>
+                                </HBox>
+                            </table:template>
+                        </table:Column>
+                    </table:columns>
+                </table:TreeTable>
             </VBox>
         </content>
     </Page>
