@@ -60,27 +60,17 @@
                         width="40%"
                         showRefreshButton="true"/>
                     <ToolbarSpacer/>
-                    <Label text="Filter:" class="sapUiTinyMarginEnd"/>
-                    <ComboBox
-                        id="typeFilter"
-                        placeholder="All Types"
-                        width="150px"
-                        selectionChange=".onTypeFilterChange">
-                        <items>
-                            <core:Item key="all"   text="All Types"/>
-                            <core:Item key="role"  text="Roles"/>
-                            <core:Item key="space" text="Spaces"/>
-                            <core:Item key="page"  text="Pages"/>
-                            <core:Item key="app"   text="Apps"/>
-                        </items>
-                    </ComboBox>
+                   
+                    <ToolbarSeparator/>
+                    <Button
+                        id="exportBtn"
+                        text="Export to Excel"
+                        icon="sap-icon://download"
+                        type="Emphasized"
+                        press=".onExportToExcel"
+                        tooltip="Export the full hierarchy to Excel"/>
                 </OverflowToolbar>
 
-                <!--
-                    visibleRowCount="20" keeps a fixed height.
-                    width="100%" + no fixed column widths → columns fill the full table.
-                    The last column has no width so it absorbs all remaining space.
-                -->
                 <table:TreeTable
                     id="roleTree"
                     rows="{
