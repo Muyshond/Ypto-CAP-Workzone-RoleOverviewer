@@ -308,13 +308,10 @@ export default class overview extends Controller {
         return `${before}<span style="background:#FFE066;color:#1a1a1a;font-weight:700;border-radius:2px;padding:0 2px;">${match}</span>${after}`;
     }
 
+    //convert tekens naar tekst (<, >, &, ")
     private _escapeHtml(s: string): string {
         return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
-
-
-
-
 
     public onExpandAll(): void {
         const oTable = this.byId("roleTree") as TreeTable;
