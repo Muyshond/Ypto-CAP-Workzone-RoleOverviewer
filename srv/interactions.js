@@ -5,8 +5,14 @@ const path = require('path');
 const { getDestination } = require('@sap-cloud-sdk/connectivity');
 const { executeHttpRequest } = require('@sap-cloud-sdk/http-client');
 
+
+
+const WORKZONE_SITE_ID = '1af031d9-9029-49a0-9ab5-f880ce5118bb';
+
+
 module.exports = cds.service.impl(async function() {
     
+
     this.on('analyzeExport', async (req) => {
         try {
             
@@ -34,11 +40,10 @@ module.exports = cds.service.impl(async function() {
     this.on('analyzeFromDestination', async (req) => {
         try {
             const dest = await getDestination({ destinationName: 'workzone-api' });
-
             
             const response = await executeHttpRequest(dest, {
                 method: 'GET',
-                url: '/cdm_export_service/v1/export/site(siteID=\'1af031d9-9029-49a0-9ab5-f880ce5118bb\')',
+                url: `/cdm_export_service/v1/export/site(siteID='${WORKZONE_SITE_ID}')`,
                 responseType: 'arraybuffer' 
             });
 

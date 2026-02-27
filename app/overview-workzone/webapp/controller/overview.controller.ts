@@ -239,6 +239,8 @@ export default class overview extends Controller {
         return ["", "", "", "", "", "", "", ""];
     }
 
+    //UI5s export to excel tool niet goed voor onze use case. npm package doet moeilijk
+    // Dus haal XLSX package statisch op. 
     private _loadSheetJS(): Promise<any> {
         return new Promise((resolve, reject) => {
             if ((window as any).XLSX) { resolve((window as any).XLSX); return; }
