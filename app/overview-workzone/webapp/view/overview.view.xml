@@ -8,7 +8,7 @@
     <Page title="SAP Workzone - Role Hierarchy Analysis" class="sapUiResponsiveContentPadding">
         <content>
             <VBox>
-                <Panel headerText="Overview Statistics">
+                <Panel headerText="Statistics">
                     <content>
                         <HBox justifyContent="SpaceBetween" class="sapUiSmallMargin">
                             <VBox class="sapUiSmallMarginEnd" width="24%">
@@ -51,25 +51,7 @@
                     </content>
                 </Panel>
 
-                <OverflowToolbar class="sapUiTinyMarginTop">
-                    <SearchField
-                        id="searchField"
-                        placeholder="Search by ID, Name, Type or Provider..."
-                        search=".onSearch"
-                        liveChange=".onSearch"
-                        width="40%"
-                        showRefreshButton="true"/>
-                    <ToolbarSpacer/>
-                   
-                    <ToolbarSeparator/>
-                    <Button
-                        id="exportBtn"
-                        text="Export to Excel"
-                        icon="sap-icon://download"
-                        type="Emphasized"
-                        press=".onExportToExcel"
-                        tooltip="Export the full hierarchy to Excel"/>
-                </OverflowToolbar>
+              
 
                 <table:TreeTable
                     id="roleTree"
@@ -89,9 +71,24 @@
                     <table:extension>
                         <OverflowToolbar>
                             <Title text="Workzone Hierarchy" level="H3"/>
+
+                            
                             <ToolbarSpacer/>
-                            <Text text="{= ${/roles}.length } roles loaded"/>
+                            <Button
+                        id="exportBtn"
+                        text="Export to Excel"
+                        icon="sap-icon://download"
+                        type="Emphasized"
+                        press=".onExportToExcel"
+                        tooltip="Export the full hierarchy to Excel"/>
                         </OverflowToolbar>
+                         <SearchField
+                        id="searchField"
+                        placeholder="Search by ID, Name, Type or Provider..."
+                        search=".onSearch"
+                        liveChange=".onSearch"
+                        width="40%"
+                        showRefreshButton="true"/>
                     </table:extension>
 
                     <table:columns>
