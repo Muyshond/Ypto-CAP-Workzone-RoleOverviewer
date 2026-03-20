@@ -17,6 +17,7 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
         }
       });
     },
+    // ─── Load data ────────────────────────────────────────────────────────────────
     _loadData: async function _loadData() {
       const oView = this.getView();
       if (!oView) return;
@@ -25,35 +26,32 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
         console.error("OData v4 model niet gevonden.");
         return;
       }
+      const isLocal = ["localhost", "port", "4004"].some(s => window.location.hostname.includes(s));
       try {
-        const hostname = window.location.hostname;
-        const isLocal = hostname.includes("localhost") || hostname.includes("port") || hostname.includes("4004");
-        const sPath = isLocal ? "/analyzeExport(...)" : "/analyzeFromDestination(...)";
-        const oBinding = oModel.bindContext(sPath);
+        let oBinding;
+        if (isLocal) {
+          // Offline: use local zip file, no params needed
+          oBinding = oModel.bindContext("/analyzeExport(...)");
+        } else {
+          // Online: use env (destination name) + siteId from the toolbar
+          const sEnv = this.byId("environmentSelect")?.getSelectedKey() || "workzone-dev";
+          const sSiteId = (this.byId("siteIdInput")?.getValue() || "").trim();
+          if (!sSiteId) {
+            MessageBox.warning("Vul een Site ID in om data te laden.");
+            return;
+          }
+          oBinding = oModel.bindContext("/getWorkzoneData(...)");
+          oBinding.setParameter("env", sEnv);
+          oBinding.setParameter("siteId", sSiteId);
+        }
         await oBinding.execute();
-        const oContext = oBinding.getBoundContext();
-        const result = oContext ? oContext.getObject() : null;
-        const data = result?.value || result;
-        data.typeFilters = [{
-          key: "all",
-          text: "All Types"
-        }, {
-          key: "role",
-          text: "Roles"
-        }, {
-          key: "space",
-          text: "Spaces"
-        }, {
-          key: "page",
-          text: "Pages"
-        }, {
-          key: "app",
-          text: "Apps"
-        }];
+        const result = oBinding.getBoundContext()?.getObject();
+        // value is an array with one element when returned from a function import
+        const raw = result?.value || result;
+        const data = Array.isArray(raw) ? raw[0] : raw;
         data._searchQuery = "";
         this._aOriginalRoles = JSON.parse(JSON.stringify(data.roles || []));
-        const oModelData = new JSONModel(data);
-        this.getView()?.setModel(oModelData);
+        this.getView()?.setModel(new JSONModel(data));
       } catch (error) {
         console.error("Fout tijdens laden:", error);
         if (!error.canceled) {
@@ -61,6 +59,10 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
         }
       }
     },
+    /** Called by the Load button and by pressing Enter in the Site ID field */onLoad: function _onLoad() {
+      this._loadData();
+    },
+    // ─── Search ───────────────────────────────────────────────────────────────────
     onSearch: function _onSearch(oEvent) {
       const sQuery = (oEvent.getParameter("query") || oEvent.getParameter("newValue") || "").trim();
       this._sCurrentQuery = sQuery.toLowerCase();
@@ -80,13 +82,14 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
         oTable.collapseAll();
       }
     },
-    // export excel => fix hierarchy
+    // ─── Excel Export ─────────────────────────────────────────────────────────────
     onExportToExcel: async function _onExportToExcel() {
       const oModel = this.getView()?.getModel();
       if (!oModel) return;
       try {
         const XLSX = await this._loadSheetJS();
         const oStats = oModel.getProperty("/statistics") || {};
+        const sEnv = this.byId("environmentSelect")?.getSelectedItem()?.getText() || "LOCAL";
         const rows = [];
         rows.push(["Role Name", "Role ID", "Provider", "Space Name", "Space ID", "Page Name", "Page ID", "App ID"]);
         rows.push([`Roles: ${oStats.totalRoles ?? ""}`, `Spaces: ${oStats.totalSpaces ?? ""}`, `Pages: ${oStats.totalPages ?? ""}`, `Apps: ${oStats.totalApps ?? ""}`, "", "", "", ""]);
@@ -223,7 +226,7 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
               r,
               c
             });
-            if (!ws[addr] || ws[addr].v === "" || ws[addr].v === null || ws[addr].v === undefined) continue;
+            if (!ws[addr] || !ws[addr].v) continue;
             ws[addr].s = {
               fill: {
                 patternType: "solid",
@@ -243,7 +246,7 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Workzone Hierarchy");
         const sDate = new Date().toISOString().slice(0, 10);
-        XLSX.writeFile(wb, `WorkzoneHierarchy_${sDate}.xlsx`);
+        XLSX.writeFile(wb, `WorkzoneHierarchy_${sEnv}_${sDate}.xlsx`);
       } catch (error) {
         console.error("Export mislukt:", error);
         MessageBox.error("Excel export mislukt: " + (error.message || "Onbekende fout"));
@@ -252,6 +255,8 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
     _makeRow: function _makeRow() {
       return ["", "", "", "", "", "", "", ""];
     },
+    // UI5s export to excel tool niet goed voor onze use case. npm package doet moeilijk
+    // Dus haal XLSX package statisch op.
     _loadSheetJS: function _loadSheetJS() {
       return new Promise((resolve, reject) => {
         if (window.XLSX) {
@@ -265,6 +270,7 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
         document.head.appendChild(script);
       });
     },
+    // ─── Tree filtering ───────────────────────────────────────────────────────────
     _filterTree: function _filterTree(aNodes, sQuery, bAncestorMatched) {
       const aResult = [];
       for (const node of aNodes) {
@@ -288,12 +294,11 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
         } else {
           const aFilteredChildren = node.children?.length > 0 ? this._filterTree(node.children, sQuery, false) : [];
           if (aFilteredChildren.length > 0) {
-            const oKept = {
-              ...node
-            };
-            oKept.highlighted = false;
-            oKept.children = aFilteredChildren;
-            aResult.push(oKept);
+            aResult.push({
+              ...node,
+              highlighted: false,
+              children: aFilteredChildren
+            });
           }
         }
       }
@@ -302,26 +307,23 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
     _nodeMatches: function _nodeMatches(node, sQuery) {
       return node.id && node.id.toLowerCase().includes(sQuery) || node.title && node.title.toLowerCase().includes(sQuery) || node.type && node.type.toLowerCase().includes(sQuery) || node.providerId && node.providerId.toLowerCase().includes(sQuery);
     },
+    // ─── Formatters ───────────────────────────────────────────────────────────────
     formatProviderHighlight: function _formatProviderHighlight(sValue, sQuery) {
       return this.formatHighlight(sValue || "BTP", sQuery);
     },
     formatHighlight: function _formatHighlight(sValue, sQuery) {
       if (!sValue) return "";
-      if (!sQuery || sQuery.length === 0) return this._escapeHtml(sValue);
-      const sLower = sValue.toLowerCase();
-      const iIdx = sLower.indexOf(sQuery);
+      if (!sQuery) return this._escapeHtml(sValue);
+      const iIdx = sValue.toLowerCase().indexOf(sQuery);
       if (iIdx === -1) return this._escapeHtml(sValue);
-      const before = this._escapeHtml(sValue.substring(0, iIdx));
-      const match = this._escapeHtml(sValue.substring(iIdx, iIdx + sQuery.length));
-      const after = this._escapeHtml(sValue.substring(iIdx + sQuery.length));
-      return `${before}<span style="background:#FFE066;color:#1a1a1a;font-weight:700;border-radius:2px;padding:0 2px;">${match}</span>${after}`;
+      return this._escapeHtml(sValue.substring(0, iIdx)) + `<span style="background:#FFE066;color:#1a1a1a;font-weight:700;border-radius:2px;padding:0 2px;">${this._escapeHtml(sValue.substring(iIdx, iIdx + sQuery.length))}</span>` + this._escapeHtml(sValue.substring(iIdx + sQuery.length));
     },
+    // convert tekens naar tekst (<, >, &, ")
     _escapeHtml: function _escapeHtml(s) {
       return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     },
     onExpandAll: function _onExpandAll() {
-      const oTable = this.byId("roleTree");
-      if (oTable) oTable.expandToLevel(10);
+      this.byId("roleTree")?.expandToLevel(10);
     },
     onCollapseAll: function _onCollapseAll() {
       const oTable = this.byId("roleTree");

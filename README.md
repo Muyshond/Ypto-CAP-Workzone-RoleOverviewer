@@ -7,7 +7,7 @@ You can find client id and secret in the service-key of the service: SAP Build W
 ![](img/service-key.png "Find client id and secret")
   
 Create a destination with the following params
-- name: workzone-api
+- name: workzone-api-env (this can be dev, prd, ...)
 - url : https://portal-service.cfapps.eu20.hana.ondemand.com 
 - Type: HTTP
 - Auth: OAuth2JWTBearer
@@ -19,10 +19,7 @@ Create a destination with the following params
 
 ## Frontend 
 To get an overview of your workzone, change the app so that your site id is collected.   
-In the [`srv/interactions.js`](/srv/interactions.js) on the top of the file, change the workzone site id to the site id of your site. 
-```ts
- const WORKZONE_SITE_ID = 'your-workzone-siteid';
-```
+
 Find the site ID so that you can choose what page to collect the zip from.  
   
 ## Run app

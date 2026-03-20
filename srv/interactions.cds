@@ -4,9 +4,11 @@ service CatalogService {
     
 
 
-    function getWorkzoneData(siteId: String) returns array of{
+    function getWorkzoneData(env: String, siteId: String) returns array of{
 
     };
+
+
     
 
     @readonly
