@@ -40,7 +40,11 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
             MessageBox.warning("Vul een Site ID in om data te laden.");
             return;
           }
-          oBinding = oModel.bindContext("/getWorkzoneData(...)");
+
+          // Always create a fresh binding — reusing the same one loses setParameter on 2nd call
+          oBinding = oModel.bindContext("/getWorkzoneData(...)", undefined, {
+            $$inheritExpandSelect: false
+          });
           oBinding.setParameter("env", sEnv);
           oBinding.setParameter("siteId", sSiteId);
         }
@@ -52,6 +56,9 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
         data._searchQuery = "";
         this._aOriginalRoles = JSON.parse(JSON.stringify(data.roles || []));
         this.getView()?.setModel(new JSONModel(data));
+
+        // Destroy binding to prevent stale state on next call
+        oBinding.destroy();
       } catch (error) {
         console.error("Fout tijdens laden:", error);
         if (!error.canceled) {

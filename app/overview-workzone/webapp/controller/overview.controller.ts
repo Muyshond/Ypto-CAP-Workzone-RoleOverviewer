@@ -49,7 +49,10 @@ export default class overview extends Controller {
                     return;
                 }
 
-                oBinding = oModel.bindContext("/getWorkzoneData(...)");
+                // Always create a fresh binding — reusing the same one loses setParameter on 2nd call
+                oBinding = oModel.bindContext("/getWorkzoneData(...)", undefined, {
+                    $$inheritExpandSelect: false
+                });
                 oBinding.setParameter("env",    sEnv);
                 oBinding.setParameter("siteId", sSiteId);
             }
@@ -65,6 +68,9 @@ export default class overview extends Controller {
             this._aOriginalRoles = JSON.parse(JSON.stringify(data.roles || []));
 
             this.getView()?.setModel(new JSONModel(data));
+
+            // Destroy binding to prevent stale state on next call
+            oBinding.destroy();
 
         } catch (error: any) {
             console.error("Fout tijdens laden:", error);
@@ -116,15 +122,15 @@ export default class overview extends Controller {
 
             const rows: any[][] = [];
 
-            rows.push(["Role Name", "Role ID", "Provider", "Space Name", "Space ID", "Page Name", "Page ID", "App ID"]);
-            rows.push([`Roles: ${oStats.totalRoles ?? ""}`, `Spaces: ${oStats.totalSpaces ?? ""}`, `Pages: ${oStats.totalPages ?? ""}`, `Apps: ${oStats.totalApps ?? ""}`, "", "", "", ""]);
-            rows.push(["", "", "", "", "", "", "", ""]);
+            rows.push(["Role Name", "Role ID", "Provider", "Space Name", "Space ID", "Page Name", "Page ID", "App Name", "App ID"]);
+            rows.push([`Roles: ${oStats.totalRoles ?? ""}`, `Spaces: ${oStats.totalSpaces ?? ""}`, `Pages: ${oStats.totalPages ?? ""}`, `Apps: ${oStats.totalApps ?? ""}`, "", "", "", "", ""]);
+            rows.push(["", "", "", "", "", "", "", "", ""]);
 
             for (const role of this._aOriginalRoles) {
                 const spaces = role.children || [];
 
                 if (spaces.length === 0) {
-                    rows.push([role.title || "", role.id || "", role.providerId || "BTP", "", "", "", "", ""]);
+                    rows.push([role.title || "", role.id || "", role.providerId || "BTP", "", "", "", "", "", ""]);
                     continue;
                 }
 
@@ -155,7 +161,8 @@ export default class overview extends Controller {
                             if (roleFirstRow)  { row[0] = role.title  || ""; row[1] = role.id  || ""; row[2] = role.providerId || "BTP"; roleFirstRow  = false; }
                             if (spaceFirstRow) { row[3] = space.title || ""; row[4] = space.id || ""; spaceFirstRow = false; }
                             if (pageFirstRow)  { row[5] = page.title  || ""; row[6] = page.id  || ""; pageFirstRow  = false; }
-                            row[7] = app.id || app.title || "";
+                            row[7] = app.title || app.id || "";
+                            row[8] = app.id || "";
                             rows.push(row);
                         }
                     }
@@ -163,19 +170,19 @@ export default class overview extends Controller {
             }
 
             const ws = XLSX.utils.aoa_to_sheet(rows);
-            ws["!cols"] = [{ wch: 35 }, { wch: 55 }, { wch: 25 }, { wch: 35 }, { wch: 40 }, { wch: 35 }, { wch: 40 }, { wch: 55 }];
+            ws["!cols"] = [{ wch: 35 }, { wch: 55 }, { wch: 25 }, { wch: 35 }, { wch: 40 }, { wch: 35 }, { wch: 40 }, { wch: 35 }, { wch: 55 }];
             ws["!freeze"] = { xSplit: 0, ySplit: 1 };
 
-            for (let col = 0; col <= 7; col++) {
+            for (let col = 0; col <= 8; col++) {
                 const addr = XLSX.utils.encode_cell({ r: 0, c: col });
                 if (!ws[addr]) continue;
                 ws[addr].s = { font: { bold: true, color: { rgb: "0070F2" }, sz: 10 }, fill: { patternType: "solid", fgColor: { rgb: "E8F2FF" } }, alignment: { horizontal: "left" } };
             }
 
-            const colColors: Record<number, string> = { 0: "F5F5F5", 1: "F5F5F5", 2: "F5F5F5", 3: "E8F2FF", 4: "E8F2FF", 5: "FFF8E6", 6: "FFF8E6", 7: "EDFBF0" };
+            const colColors: Record<number, string> = { 0: "F5F5F5", 1: "F5F5F5", 2: "F5F5F5", 3: "E8F2FF", 4: "E8F2FF", 5: "FFF8E6", 6: "FFF8E6", 7: "EDFBF0", 8: "EDFBF0" };
             const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
             for (let r = 3; r <= range.e.r; r++) {
-                for (let c = 0; c <= 7; c++) {
+                for (let c = 0; c <= 8; c++) {
                     const addr = XLSX.utils.encode_cell({ r, c });
                     if (!ws[addr] || !ws[addr].v) continue;
                     ws[addr].s = { fill: { patternType: "solid", fgColor: { rgb: colColors[c] } }, alignment: { vertical: "center" }, font: { sz: 10 } };
@@ -194,7 +201,7 @@ export default class overview extends Controller {
         }
     }
 
-    private _makeRow(): any[] { return ["", "", "", "", "", "", "", ""]; }
+    private _makeRow(): any[] { return ["", "", "", "", "", "", "", "", ""]; }
 
     // UI5s export to excel tool niet goed voor onze use case. npm package doet moeilijk
     // Dus haal XLSX package statisch op.

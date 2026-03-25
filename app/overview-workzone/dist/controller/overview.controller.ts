@@ -49,7 +49,10 @@ export default class overview extends Controller {
                     return;
                 }
 
-                oBinding = oModel.bindContext("/getWorkzoneData(...)");
+                // Always create a fresh binding — reusing the same one loses setParameter on 2nd call
+                oBinding = oModel.bindContext("/getWorkzoneData(...)", undefined, {
+                    $$inheritExpandSelect: false
+                });
                 oBinding.setParameter("env",    sEnv);
                 oBinding.setParameter("siteId", sSiteId);
             }
@@ -65,6 +68,9 @@ export default class overview extends Controller {
             this._aOriginalRoles = JSON.parse(JSON.stringify(data.roles || []));
 
             this.getView()?.setModel(new JSONModel(data));
+
+            // Destroy binding to prevent stale state on next call
+            oBinding.destroy();
 
         } catch (error: any) {
             console.error("Fout tijdens laden:", error);
