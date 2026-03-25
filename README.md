@@ -7,7 +7,7 @@ You can find client id and secret in the service-key of the service: SAP Build W
 ![](img/service-key.png "Find client id and secret")
   
 Create a destination with the following params
-- name: workzone-api-env (this can be dev, prd, ...)
+- name: workzone-api-env (this can be dev, prd, ...) => workzone-api-dev
 - url : https://portal-service.cfapps.eu20.hana.ondemand.com 
 - Type: HTTP
 - Auth: OAuth2JWTBearer
