@@ -2,7 +2,7 @@
 This app creates an overview for users to monitor what roles have access to spaces, pages and apps. 
 
 ## Create a destination 
-To collect workzone zip file, create a destination.  
+To collect workzone zip file, create a destination to the [Workzone api](https://api.sap.com/api/ContentExport/path/PublicExportController_startExportSite "url to api reference").  
 You can find client id and secret in the service-key of the service: SAP Build Work Zone, standard edition  
 ![](img/service-key.png "Find client id and secret")
   
@@ -18,18 +18,20 @@ Create a destination with the following params
 ![](img/destination.png "Find client id and secret")
 
 ## Frontend 
-To get an overview of your workzone, change the app so that your site id is collected.   
-
-Find the site ID so that you can choose what page to collect the zip from.  
+The frontend changes to the destination.   
+Now DEV, ACC and PRD are in the dropdown.   
+If you want others, add it in the frontend and add an extra destination so that it can be reached.
+Find the site ID so that you can choose what page to collect the zip from. 
   
-## Run app
+## Run app locally
 
 - Open a new terminal and run `cds watch`
 
 
 ## Deployment
-
+``` bash
 mbt build  
 cf deploy <path_to_mtafile>
+```
 
 
