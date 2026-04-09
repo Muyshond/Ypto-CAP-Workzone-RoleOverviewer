@@ -22,7 +22,6 @@ export default class overview extends Controller {
         });
     }
 
-    // ─── Load data ────────────────────────────────────────────────────────────────
 
     private async _loadData(): Promise<void> {
         const oView = this.getView();
@@ -37,10 +36,8 @@ export default class overview extends Controller {
             let oBinding;
 
             if (isLocal) {
-                // Offline: use local zip file, no params needed
                 oBinding = oModel.bindContext("/analyzeExport(...)");
             } else {
-                // Online: use env (destination name) + siteId from the toolbar
                 const sEnv    = (this.byId("environmentSelect") as Select)?.getSelectedKey() || "workzone-dev";
                 const sSiteId = ((this.byId("siteIdInput") as Input)?.getValue() || "").trim();
 
@@ -49,7 +46,6 @@ export default class overview extends Controller {
                     return;
                 }
 
-                // Always create a fresh binding — reusing the same one loses setParameter on 2nd call
                 oBinding = oModel.bindContext("/getWorkzoneData(...)", undefined, {
                     $$inheritExpandSelect: false
                 });
@@ -60,7 +56,6 @@ export default class overview extends Controller {
             await oBinding.execute();
 
             const result = oBinding.getBoundContext()?.getObject() as any;
-            // value is an array with one element when returned from a function import
             const raw    = result?.value || result;
             const data   = Array.isArray(raw) ? raw[0] : raw;
 
@@ -69,7 +64,6 @@ export default class overview extends Controller {
 
             this.getView()?.setModel(new JSONModel(data));
 
-            // Destroy binding to prevent stale state on next call
             oBinding.destroy();
 
         } catch (error: any) {
@@ -80,12 +74,10 @@ export default class overview extends Controller {
         }
     }
 
-    /** Called by the Load button and by pressing Enter in the Site ID field */
     public onLoad(): void {
         this._loadData();
     }
 
-    // ─── Search ───────────────────────────────────────────────────────────────────
 
     public onSearch(oEvent: any): void {
         const sQuery = (oEvent.getParameter("query") || oEvent.getParameter("newValue") || "").trim();
@@ -109,7 +101,6 @@ export default class overview extends Controller {
         }
     }
 
-    // ─── Excel Export ─────────────────────────────────────────────────────────────
 
     public async onExportToExcel(): Promise<void> {
         const oModel = this.getView()?.getModel() as JSONModel;
@@ -216,7 +207,6 @@ export default class overview extends Controller {
         });
     }
 
-    // ─── Tree filtering ───────────────────────────────────────────────────────────
 
     private _filterTree(aNodes: any[], sQuery: string, bAncestorMatched: boolean): any[] {
         const aResult: any[] = [];
@@ -253,7 +243,6 @@ export default class overview extends Controller {
         );
     }
 
-    // ─── Formatters ───────────────────────────────────────────────────────────────
 
     public formatProviderHighlight(sValue: string, sQuery: string): string {
         return this.formatHighlight(sValue || "BTP", sQuery);
