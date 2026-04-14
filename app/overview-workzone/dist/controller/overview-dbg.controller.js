@@ -17,11 +17,10 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
         }
       });
     },
-    // ─── Load data ────────────────────────────────────────────────────────────────
     _loadData: async function _loadData() {
       const oView = this.getView();
       if (!oView) return;
-      const oModel = oView.getModel() || this.getOwnerComponent()?.getModel();
+      const oModel = this.getOwnerComponent()?.getModel();
       if (!oModel) {
         console.error("OData v4 model niet gevonden.");
         return;
@@ -30,18 +29,14 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
       try {
         let oBinding;
         if (isLocal) {
-          // Offline: use local zip file, no params needed
           oBinding = oModel.bindContext("/analyzeExport(...)");
         } else {
-          // Online: use env (destination name) + siteId from the toolbar
           const sEnv = this.byId("environmentSelect")?.getSelectedKey() || "workzone-dev";
           const sSiteId = (this.byId("siteIdInput")?.getValue() || "").trim();
           if (!sSiteId) {
             MessageBox.warning("Vul een Site ID in om data te laden.");
             return;
           }
-
-          // Always create a fresh binding — reusing the same one loses setParameter on 2nd call
           oBinding = oModel.bindContext("/getWorkzoneData(...)", undefined, {
             $$inheritExpandSelect: false
           });
@@ -50,14 +45,11 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
         }
         await oBinding.execute();
         const result = oBinding.getBoundContext()?.getObject();
-        // value is an array with one element when returned from a function import
         const raw = result?.value || result;
         const data = Array.isArray(raw) ? raw[0] : raw;
         data._searchQuery = "";
         this._aOriginalRoles = JSON.parse(JSON.stringify(data.roles || []));
         this.getView()?.setModel(new JSONModel(data));
-
-        // Destroy binding to prevent stale state on next call
         oBinding.destroy();
       } catch (error) {
         console.error("Fout tijdens laden:", error);
@@ -66,10 +58,9 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
         }
       }
     },
-    /** Called by the Load button and by pressing Enter in the Site ID field */onLoad: function _onLoad() {
+    onLoad: function _onLoad() {
       this._loadData();
     },
-    // ─── Search ───────────────────────────────────────────────────────────────────
     onSearch: function _onSearch(oEvent) {
       const sQuery = (oEvent.getParameter("query") || oEvent.getParameter("newValue") || "").trim();
       this._sCurrentQuery = sQuery.toLowerCase();
@@ -89,7 +80,6 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
         oTable.collapseAll();
       }
     },
-    // ─── Excel Export ─────────────────────────────────────────────────────────────
     onExportToExcel: async function _onExportToExcel() {
       const oModel = this.getView()?.getModel();
       if (!oModel) return;
@@ -98,13 +88,13 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
         const oStats = oModel.getProperty("/statistics") || {};
         const sEnv = this.byId("environmentSelect")?.getSelectedItem()?.getText() || "LOCAL";
         const rows = [];
-        rows.push(["Role Name", "Role ID", "Provider", "Space Name", "Space ID", "Page Name", "Page ID", "App ID"]);
-        rows.push([`Roles: ${oStats.totalRoles ?? ""}`, `Spaces: ${oStats.totalSpaces ?? ""}`, `Pages: ${oStats.totalPages ?? ""}`, `Apps: ${oStats.totalApps ?? ""}`, "", "", "", ""]);
-        rows.push(["", "", "", "", "", "", "", ""]);
+        rows.push(["Role Name", "Role ID", "Provider", "Space Name", "Space ID", "Page Name", "Page ID", "App Name", "App ID"]);
+        rows.push([`Roles: ${oStats.totalRoles ?? ""}`, `Spaces: ${oStats.totalSpaces ?? ""}`, `Pages: ${oStats.totalPages ?? ""}`, `Apps: ${oStats.totalApps ?? ""}`, "", "", "", "", ""]);
+        rows.push(["", "", "", "", "", "", "", "", ""]);
         for (const role of this._aOriginalRoles) {
           const spaces = role.children || [];
           if (spaces.length === 0) {
-            rows.push([role.title || "", role.id || "", role.providerId || "BTP", "", "", "", "", ""]);
+            rows.push([role.title || "", role.id || "", role.providerId || "BTP", "", "", "", "", "", ""]);
             continue;
           }
           let roleFirstRow = true;
@@ -163,7 +153,8 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
                   row[6] = page.id || "";
                   pageFirstRow = false;
                 }
-                row[7] = app.id || app.title || "";
+                row[7] = app.title || app.id || "";
+                row[8] = app.id || "";
                 rows.push(row);
               }
             }
@@ -185,13 +176,15 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
         }, {
           wch: 40
         }, {
+          wch: 35
+        }, {
           wch: 55
         }];
         ws["!freeze"] = {
           xSplit: 0,
           ySplit: 1
         };
-        for (let col = 0; col <= 7; col++) {
+        for (let col = 0; col <= 8; col++) {
           const addr = XLSX.utils.encode_cell({
             r: 0,
             c: col
@@ -224,11 +217,12 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
           4: "E8F2FF",
           5: "FFF8E6",
           6: "FFF8E6",
-          7: "EDFBF0"
+          7: "EDFBF0",
+          8: "EDFBF0"
         };
         const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
         for (let r = 3; r <= range.e.r; r++) {
-          for (let c = 0; c <= 7; c++) {
+          for (let c = 0; c <= 8; c++) {
             const addr = XLSX.utils.encode_cell({
               r,
               c
@@ -260,7 +254,7 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
       }
     },
     _makeRow: function _makeRow() {
-      return ["", "", "", "", "", "", "", ""];
+      return ["", "", "", "", "", "", "", "", ""];
     },
     // UI5s export to excel tool niet goed voor onze use case. npm package doet moeilijk
     // Dus haal XLSX package statisch op.
@@ -277,7 +271,6 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
         document.head.appendChild(script);
       });
     },
-    // ─── Tree filtering ───────────────────────────────────────────────────────────
     _filterTree: function _filterTree(aNodes, sQuery, bAncestorMatched) {
       const aResult = [];
       for (const node of aNodes) {
@@ -314,7 +307,6 @@ sap.ui.define(["sap/m/MessageBox", "sap/ui/core/mvc/Controller", "sap/ui/model/j
     _nodeMatches: function _nodeMatches(node, sQuery) {
       return node.id && node.id.toLowerCase().includes(sQuery) || node.title && node.title.toLowerCase().includes(sQuery) || node.type && node.type.toLowerCase().includes(sQuery) || node.providerId && node.providerId.toLowerCase().includes(sQuery);
     },
-    // ─── Formatters ───────────────────────────────────────────────────────────────
     formatProviderHighlight: function _formatProviderHighlight(sValue, sQuery) {
       return this.formatHighlight(sValue || "BTP", sQuery);
     },
