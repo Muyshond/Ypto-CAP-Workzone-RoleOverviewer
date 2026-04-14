@@ -27,7 +27,7 @@ export default class overview extends Controller {
         const oView = this.getView();
         if (!oView) return;
 
-        const oModel = (oView.getModel() || this.getOwnerComponent()?.getModel()) as ODataModel;
+        const oModel = this.getOwnerComponent()?.getModel() as ODataModel;
         if (!oModel) { console.error("OData v4 model niet gevonden."); return; }
 
         const isLocal = ["localhost", "port", "4004"].some(s => window.location.hostname.includes(s));
