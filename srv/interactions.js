@@ -12,7 +12,7 @@ module.exports = cds.service.impl(async function () {
     // ── Local zip (offline / localhost) ───────────────────────────────────────
     this.on('analyzeExport', async (req) => {
         try {
-            const zipPath = path.join(__dirname, '..', 'data', 'ContentTransport_20260203_121637.zip');
+            const zipPath = path.join(__dirname, '..', 'data', 'ContentTransport.zip');
 
             if (!fs.existsSync(zipPath)) {
                 req.error(404, `Zip file not found at ${zipPath}`);
@@ -210,47 +210,6 @@ class WorkzoneAnalyzer {
                         roleSpaces[spaceId] = JSON.parse(JSON.stringify(spaceDetails[spaceId]));
                         totalApps += roleSpaces[spaceId].appCount || 0;
                     }
-                });
-            }
-
-            if (providerId) {
-                this.data.workpages.forEach(wp => {
-                    if (wp.language !== 'en') return;
-                    const matchedApps = (wp.workPageVizsId || [])
-                        .filter(vizId => vizId.startsWith(providerId + '_') || vizId.includes(providerId))
-                        .map(vizId => vizId.split('#')[0]);
-
-                    if (matchedApps.length === 0) return;
-
-                    const spaceId = wpSpMap[wp.id];
-                    if (!spaceId || !spaceDetails[spaceId]) return;
-
-                    if (!roleSpaces[spaceId]) {
-                        roleSpaces[spaceId] = {
-                            id: spaceId, type: 'space',
-                            title: spaceDetails[spaceId].title,
-                            pageCount: 0, appCount: 0, children: []
-                        };
-                    }
-
-                    const pageNode = {
-                        id: wp.id, type: 'page',
-                        title: wp.mergedEntity?.descriptor?.value?.title,
-                        appCount: matchedApps.length, children: []
-                    };
-
-                    matchedApps.forEach(appId => {
-                        pageNode.children.push({
-                            id: appId, type: 'app',
-                            title: appId.includes('_') ? appId.split('_').pop() : appId,
-                            fullId: appId
-                        });
-                        totalApps++;
-                    });
-
-                    roleSpaces[spaceId].children.push(pageNode);
-                    roleSpaces[spaceId].pageCount++;
-                    roleSpaces[spaceId].appCount += matchedApps.length;
                 });
             }
 
