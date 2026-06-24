@@ -36,3 +36,9 @@ cf deploy mta_archives/<mta_file.mtar>
 ```
 
 
+
+## backend apps
+
+
+https://community.sap.com/t5/technology-blog-posts-by-sap/sap-build-work-zone-standard-edition-and-joule-health-checks/ba-p/14348321
+/sap/bc/ui2/cdm3/entities

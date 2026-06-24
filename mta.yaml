@@ -10,6 +10,7 @@ modules:
     requires:
       - name: workzone-role-overviewer-auth
       - name: workzone-role-overviewer-destination
+      - name: workzone-role-overviewer-connectivity
     provides:
       - name: srv-api
         properties:
@@ -110,6 +111,12 @@ resources:
             existing_destinations_policy: update
     requires:
       - name: srv-api
+
+  - name: workzone-role-overviewer-connectivity
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: connectivity
+      service-plan: lite
 
   - name: workzone-role-overviewer-html5-repo-host
     type: org.cloudfoundry.managed-service
