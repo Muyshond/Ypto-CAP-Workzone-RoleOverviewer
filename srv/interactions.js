@@ -70,9 +70,9 @@ module.exports = cds.service.impl(async function () {
             // Workzone slaat ze op MET prefix (bv. "~gbx_S4D_BCGN_MDGA_REQXX").
             // parseCdmRoles voegt de prefix toe zodat de IDs matchen.
             console.log('Stap 2: S4HANA CDM ophalen voor backend rollen + app-titels...');
-            const providerRoleMap = await fetchAllProviderRoles();
+            const { roleMap: providerRoleMap, appTitleMap } = await fetchAllProviderRoles();
 
-            return new WorkzoneAnalyzer().analyzeFromBuffer(zipBuffer, providerRoleMap);
+            return new WorkzoneAnalyzer().analyzeFromBuffer(zipBuffer, providerRoleMap, appTitleMap);
 
         } catch (err) {
             console.error('getWorkzoneData fout:', err.message);
@@ -92,6 +92,7 @@ module.exports = cds.service.impl(async function () {
 // ─────────────────────────────────────────────────────────────────────────────
 async function fetchAllProviderRoles() {
     const roleMap = {};
+    const globalAppTitleMap = {};
 
     // Groepeer providers per destination om dubbele calls te vermijden
     const destGroups = {};
@@ -123,20 +124,21 @@ async function fetchAllProviderRoles() {
 
                 // App-titel map opbouwen uit texts[] — identification.title is altijd {{title}}
                 // maar texts[].textDictionary.title bevat de echte vertaalde naam.
-                const appTitleMap = {};
+                const localAppTitleMap = {};
                 if (appsResp) {
                     const appEntities = normalizeCdmEntities(appsResp.data);
                     for (const e of appEntities) {
                         const id = e?.identification?.id;
                         if (!id) continue;
                         const title = resolveTextsTitle(e?.texts);
-                        if (title) appTitleMap[id] = title;
+                        if (title) localAppTitleMap[id] = title;
                     }
-                    console.log(`    ✓ ${Object.keys(appTitleMap).length} app-titels opgehaald`);
+                    Object.assign(globalAppTitleMap, localAppTitleMap);
+                    console.log(`    ✓ ${Object.keys(localAppTitleMap).length} app-titels opgehaald`);
                 }
 
                 for (const providerId of providers) {
-                    const roles = parseCdmRoles(rolesResp.data, providerId, appTitleMap);
+                    const roles = parseCdmRoles(rolesResp.data, providerId, localAppTitleMap);
                     roles.forEach(r => { roleMap[r.wzId] = r; });
                     console.log(`    ✓ ${roles.length} rollen voor ${providerId}  (prefix: "${wzPrefix(providerId)}")`);
                 }
@@ -148,7 +150,7 @@ async function fetchAllProviderRoles() {
     );
 
     console.log(`  Totaal in roleMap: ${Object.keys(roleMap).length}`);
-    return roleMap;
+    return { roleMap, appTitleMap: globalAppTitleMap };
 }
 
 // Normaliseer CDM response naar array van entiteiten
@@ -193,13 +195,11 @@ function parseCdmRoles(data, providerId, appTitleMap = {}) {
             return type === 'role';
         })
         .map(e => {
-            const ident  = e?.identification  || e?.cdm?.identification  || {};
-            const payload = e?.payload        || e?.cdm?.payload         || {};
-            const texts   = e?.texts          || e?.cdm?.texts           || {};
+            const ident   = e?.identification || e?.cdm?.identification || {};
+            const payload = e?.payload        || e?.cdm?.payload        || {};
 
             const s4RoleId  = ident.id || '';
-            const rawTitle  = texts['cdm|identification|title']?.value?.[''] || ident.title || '';
-            const roleTitle = (rawTitle && !rawTitle.startsWith('{{')) ? rawTitle : s4RoleId;
+            const roleTitle = resolveTextsTitle(e?.texts || e?.cdm?.texts) || s4RoleId;
 
             // Apps in payload.apps of payload.viz — filter generic systeem-apps eruit
             // App-titels worden opgezocht in appTitleMap (gebouwd uit businessapp texts[])
@@ -236,9 +236,9 @@ class WorkzoneAnalyzer {
         };
     }
 
-    analyzeFromBuffer(zipBuffer, providerRoleMap) {
+    analyzeFromBuffer(zipBuffer, providerRoleMap, appTitleMap = {}) {
         this.loadDataFromFiles(this.extractZip(zipBuffer));
-        return this.generateUI5Hierarchy(providerRoleMap);
+        return this.generateUI5Hierarchy(providerRoleMap, appTitleMap);
     }
 
     extractZip(zipBuffer) {
@@ -293,7 +293,22 @@ class WorkzoneAnalyzer {
         }
     }
 
-    generateUI5Hierarchy(providerRoleMap) {
+    generateUI5Hierarchy(providerRoleMap, appTitleMap = {}) {
+
+        // Lokale BTP app titels uit ZIP data
+        const localAppTitleMap = {};
+        this.data.business_apps.forEach(app => {
+            const id = app.cdm?.identification?.id || app.identification?.id;
+            if (!id) return;
+            const title = resolveTextsTitle(app.cdm?.texts) ||
+                          resolveTextsTitle(app.texts) ||
+                          app.cdm?.texts?.['cdm|identification|title']?.value?.[''] ||
+                          app.cdm?.identification?.title;
+            if (title && !title.startsWith('{{')) localAppTitleMap[id] = title;
+        });
+
+        // Gecombineerde lookup: CDM API titels + lokale ZIP titels
+        const allAppTitles = { ...localAppTitleMap, ...appTitleMap };
 
         // Workpage → viz IDs
         const wpVizMap = {};
@@ -329,10 +344,11 @@ class WorkzoneAnalyzer {
                     appCount: vizIds.length, children: []
                 };
 
-                vizIds.forEach(appId => pageNode.children.push({
-                    id: appId, type: 'app',
-                    title: this._friendlyName(appId), fullId: appId
-                }));
+                vizIds.forEach(appId => {
+                    const bareId = appId.includes('_') ? appId.substring(appId.indexOf('_') + 1) : appId;
+                    const title = allAppTitles[appId] || allAppTitles[bareId] || this._friendlyName(appId);
+                    pageNode.children.push({ id: appId, type: 'app', title, fullId: appId });
+                });
 
                 spaceNode.children.push(pageNode);
                 spaceNode.pageCount++;
@@ -372,7 +388,9 @@ class WorkzoneAnalyzer {
                         .filter(Boolean)
                 ]);
                 appIds.forEach(appId => {
-                    children.push({ id: appId, type: 'app', title: this._friendlyName(appId), fullId: appId });
+                    const bareId = appId.includes('_') ? appId.substring(appId.indexOf('_') + 1) : appId;
+                    const title = allAppTitles[appId] || allAppTitles[bareId] || this._friendlyName(appId);
+                    children.push({ id: appId, type: 'app', title, fullId: appId });
                     totalApps++;
                 });
 
