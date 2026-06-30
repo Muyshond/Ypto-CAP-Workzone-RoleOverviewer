@@ -31,6 +31,13 @@ function wzPrefix(providerId) {
     return `~${providerId.toLowerCase()}_`;
 }
 
+// Haal het 32-karakter hex businessapp ID uit een viz ID, ongeacht het prefix-formaat
+// (bv. "gbx_HEXID" of "ds4_110_HEXID" geven beide het juiste HEXID terug).
+function extractHexAppId(appId) {
+    const match = appId.match(/[0-9A-Fa-f]{32}/);
+    return match ? match[0] : null;
+}
+
 
 module.exports = cds.service.impl(async function () {
 
@@ -310,10 +317,21 @@ class WorkzoneAnalyzer {
         // Gecombineerde lookup: CDM API titels + lokale ZIP titels
         const allAppTitles = { ...localAppTitleMap, ...appTitleMap };
 
+        // Workpage lookup per ID — prefereer 'en', val terug op 'master' als er
+        // geen en-vertaling bestaat (anders verdwijnen niet-vertaalde pages stilletjes).
+        const workpageById = {};
+        this.data.workpages.forEach(wp => {
+            if (wp.language !== 'en' && wp.language !== 'master') return;
+            const existing = workpageById[wp.id];
+            if (!existing || (existing.language === 'master' && wp.language === 'en')) {
+                workpageById[wp.id] = wp;
+            }
+        });
+
         // Workpage → viz IDs
         const wpVizMap = {};
-        this.data.workpages.forEach(wp => {
-            if (wp.language === 'en') wpVizMap[wp.id] = wp.workPageVizsId || [];
+        Object.values(workpageById).forEach(wp => {
+            wpVizMap[wp.id] = wp.workPageVizsId || [];
         });
 
         // Space → workpages
@@ -334,7 +352,7 @@ class WorkzoneAnalyzer {
             };
 
             (spWpMap[sp.id] || []).forEach(wpId => {
-                const wp = this.data.workpages.find(w => w.id === wpId && w.language === 'en');
+                const wp = workpageById[wpId];
                 if (!wp) return;
 
                 const vizIds = (wpVizMap[wpId] || []).map(v => v.split('#')[0]);
@@ -345,8 +363,8 @@ class WorkzoneAnalyzer {
                 };
 
                 vizIds.forEach(appId => {
-                    const bareId = appId.includes('_') ? appId.substring(appId.indexOf('_') + 1) : appId;
-                    const title = allAppTitles[appId] || allAppTitles[bareId] || this._friendlyName(appId);
+                    const bareId = extractHexAppId(appId);
+                    const title = allAppTitles[appId] || (bareId && allAppTitles[bareId]) || this._friendlyName(appId);
                     pageNode.children.push({ id: appId, type: 'app', title, fullId: appId });
                 });
 
@@ -388,8 +406,8 @@ class WorkzoneAnalyzer {
                         .filter(Boolean)
                 ]);
                 appIds.forEach(appId => {
-                    const bareId = appId.includes('_') ? appId.substring(appId.indexOf('_') + 1) : appId;
-                    const title = allAppTitles[appId] || allAppTitles[bareId] || this._friendlyName(appId);
+                    const bareId = extractHexAppId(appId);
+                    const title = allAppTitles[appId] || (bareId && allAppTitles[bareId]) || this._friendlyName(appId);
                     children.push({ id: appId, type: 'app', title, fullId: appId });
                     totalApps++;
                 });
@@ -444,7 +462,7 @@ class WorkzoneAnalyzer {
             statistics: {
                 totalRoles:      rolesHierarchy.length,
                 totalSpaces:     Object.keys(spaceDetails).length,
-                totalPages:      this.data.workpages.filter(w => w.language === 'en').length,
+                totalPages:      Object.keys(workpageById).length,
                 totalApps:       rolesHierarchy.reduce((s, r) => s + (r.totalApps || 0), 0),
                 backendEnriched: enriched,
                 backendEmpty:    notEnriched
