@@ -11,7 +11,7 @@ Create a destination with the following params
 - url : https://portal-service.cfapps.eu20.hana.ondemand.com 
 - Type: HTTP
 - Auth: OAuth2JWTBearer
-- token url : https://<subaccount_>.authentication.<region_>.hana.ondemand.com/oauth/token?grant_type=client_credentials (in my case: https://b-fdn-dev.authentication.eu20.hana.ondemand.com/oauth/token?grant_type=client_credentials)
+- token url : https://<subaccount.>.authentication.<region.>.hana.ondemand.com/oauth/token?grant_type=client_credentials (in my case: https://b-fdn-dev.authentication.eu20.hana.ondemand.com/oauth/token?grant_type=client_credentials)
 - username : <clientid_found_in_service-key>
 - password : <clientsecret_found_in_service-key>
    
@@ -38,7 +38,10 @@ cf deploy mta_archives/<mta_file.mtar>
 
 
 ## backend apps
+Collect the names of the backend apps.  
+Read [This blog post](https://community.sap.com/t5/technology-blog-posts-by-sap/sap-build-work-zone-standard-edition-and-joule-health-checks/ba-p/14348321) for the backend endpoints
 
-
-https://community.sap.com/t5/technology-blog-posts-by-sap/sap-build-work-zone-standard-edition-and-joule-health-checks/ba-p/14348321
-/sap/bc/ui2/cdm3/entities
+Backend endpoints: 
+- **/sap/bc/ui2/cdm3/entities** 
+- **/sap/bc/ui2/cdm3/entities?entityType=role**
+- **/sap/bc/ui2/cdm3/entities?entityType=businessapp**

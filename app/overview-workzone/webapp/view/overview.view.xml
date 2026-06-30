@@ -46,6 +46,7 @@
                             <Input
                                 id="siteIdInput"
                                 placeholder="Site-ID"
+                                value="1af031d9-9029-49a0-9ab5-f880ce5118bb"
                                 width="24rem"
                                 class="sapUiSmallMarginEnd"
                                 submit=".onLoad"/>
@@ -132,7 +133,7 @@
                                 }"
                                 selectionMode="None"
                                 enableColumnReordering="false"
-                                visibleRowCount="20"
+                                visibleRowCount="15"
                                 width="100%"
                                 alternateRowColors="true">
 
