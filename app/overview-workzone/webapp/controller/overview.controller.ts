@@ -17,7 +17,9 @@ export default class overview extends Controller {
     public onInit(): void {
         this.getView()?.addEventDelegate({
             onBeforeShow: () => {
-                this._loadData();
+                // Even wachten na het tonen van de view zodat de OData-model/destination
+                // setup zeker klaar is voor de automatische eerste load.
+                setTimeout(() => this._loadData(), 2000);
             }
         });
     }
@@ -31,7 +33,9 @@ export default class overview extends Controller {
         if (!oModel) { console.error("OData v4 model niet gevonden."); return; }
 
         const isLocal = ["localhost", "port", "4004"].some(s => window.location.hostname.includes(s));
+        const oTable = this.byId("roleTree") as TreeTable;
 
+        oTable?.setBusy(true);
         try {
             let oBinding;
 
@@ -71,6 +75,8 @@ export default class overview extends Controller {
             if (!error.canceled) {
                 MessageBox.error("Data ophalen mislukt: " + (error.message || "Server Error"));
             }
+        } finally {
+            oTable?.setBusy(false);
         }
     }
 

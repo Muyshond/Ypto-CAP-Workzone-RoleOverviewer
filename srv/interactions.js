@@ -31,6 +31,21 @@ function wzPrefix(providerId) {
     return `~${providerId.toLowerCase()}_`;
 }
 
+// Eerste getDestination() na een cold start faalt soms transiënt
+// ("Failed to load destination.") omdat de connectivity/destination service
+// nog niet warm is. Eén retry met korte backoff lost dit op.
+async function getDestinationWithRetry(destinationName, attempts = 2, delayMs = 1000) {
+    for (let i = 1; i <= attempts; i++) {
+        try {
+            return await getDestination({ destinationName });
+        } catch (err) {
+            if (i === attempts) throw err;
+            console.warn(`  ⚠ getDestination("${destinationName}") mislukt (poging ${i}/${attempts}): ${err.message} — retry...`);
+            await new Promise(res => setTimeout(res, delayMs));
+        }
+    }
+}
+
 // Haal het 32-karakter hex businessapp ID uit een viz ID, ongeacht het prefix-formaat
 // (bv. "gbx_HEXID" of "ds4_110_HEXID" geven beide het juiste HEXID terug).
 function extractHexAppId(appId) {
@@ -60,7 +75,7 @@ module.exports = cds.service.impl(async function () {
 
         try {
             console.log(`\n=== Workzone ophalen: env="${env}", siteId="${siteId}" ===`);
-            const workzoneDest = await getDestination({ destinationName: `workzone-api-${env}` });
+            const workzoneDest = await getDestinationWithRetry(`workzone-api-${env}`);
 
             // ── Stap 1: Workzone zip export ───────────────────────────────────
             console.log('Stap 1: zip export ophalen...');
@@ -111,7 +126,7 @@ async function fetchAllProviderRoles() {
         Object.entries(destGroups).map(async ([destName, { cfg, providers }]) => {
             try {
                 console.log(`  → Destination "${destName}"  (providers: ${providers.join(', ')})`);
-                const dest = await getDestination({ destinationName: destName });
+                const dest = await getDestinationWithRetry(destName);
 
                 // Roles en businessapps parallel ophalen
                 const [rolesResp, appsResp] = await Promise.all([
