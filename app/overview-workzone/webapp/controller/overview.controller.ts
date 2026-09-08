@@ -2,6 +2,7 @@ import MessageBox from "sap/m/MessageBox";
 import Controller from "sap/ui/core/mvc/Controller";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
+import ResourceModel from "sap/ui/model/resource/ResourceModel";
 import TreeTable from "sap/ui/table/TreeTable";
 import Select from "sap/m/Select";
 import Input from "sap/m/Input";
@@ -42,11 +43,11 @@ export default class overview extends Controller {
             if (isLocal) {
                 oBinding = oModel.bindContext("/analyzeExport(...)");
             } else {
-                const sEnv    = (this.byId("environmentSelect") as Select)?.getSelectedKey() || "workzone-dev";
+                const sEnv    = (this.byId("environmentSelect") as Select)?.getSelectedKey() || "dev";
                 const sSiteId = ((this.byId("siteIdInput") as Input)?.getValue() || "").trim();
 
                 if (!sSiteId) {
-                    MessageBox.warning("Vul een Site ID in om data te laden.");
+                    MessageBox.warning(this._text("msgSiteIdRequired"));
                     return;
                 }
 
@@ -73,7 +74,7 @@ export default class overview extends Controller {
         } catch (error: any) {
             console.error("Fout tijdens laden:", error);
             if (!error.canceled) {
-                MessageBox.error("Data ophalen mislukt: " + (error.message || "Server Error"));
+                MessageBox.error(this._text("msgLoadFailed", [error.message || "Server Error"]));
             }
         } finally {
             oTable?.setBusy(false);
@@ -119,8 +120,19 @@ export default class overview extends Controller {
 
             const rows: any[][] = [];
 
-            rows.push(["Role Name", "Role ID", "Provider", "Space Name", "Space ID", "Page Name", "Page ID", "App Name", "App ID"]);
-            rows.push([`Roles: ${oStats.totalRoles ?? ""}`, `Spaces: ${oStats.totalSpaces ?? ""}`, `Pages: ${oStats.totalPages ?? ""}`, `Apps: ${oStats.totalApps ?? ""}`, "", "", "", "", ""]);
+            rows.push([
+                this._text("excelColRoleName"), this._text("excelColRoleId"), this._text("excelColProvider"),
+                this._text("excelColSpaceName"), this._text("excelColSpaceId"),
+                this._text("excelColPageName"), this._text("excelColPageId"),
+                this._text("excelColAppName"), this._text("excelColAppId")
+            ]);
+            rows.push([
+                this._text("excelStatRoles",  [oStats.totalRoles  ?? ""]),
+                this._text("excelStatSpaces", [oStats.totalSpaces ?? ""]),
+                this._text("excelStatPages",  [oStats.totalPages  ?? ""]),
+                this._text("excelStatApps",   [oStats.totalApps   ?? ""]),
+                "", "", "", "", ""
+            ]);
             rows.push(["", "", "", "", "", "", "", "", ""]);
 
             for (const role of this._aOriginalRoles) {
@@ -194,7 +206,7 @@ export default class overview extends Controller {
 
         } catch (error: any) {
             console.error("Export mislukt:", error);
-            MessageBox.error("Excel export mislukt: " + (error.message || "Onbekende fout"));
+            MessageBox.error(this._text("msgExportFailed", [error.message || "Onbekende fout"]));
         }
     }
 
@@ -208,7 +220,7 @@ export default class overview extends Controller {
             const script = document.createElement("script");
             script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
             script.onload  = () => resolve((window as any).XLSX);
-            script.onerror = () => reject(new Error("SheetJS kon niet geladen worden"));
+            script.onerror = () => reject(new Error(this._text("msgSheetJsLoadFailed")));
             document.head.appendChild(script);
         });
     }
@@ -238,6 +250,13 @@ export default class overview extends Controller {
             }
         }
         return aResult;
+    }
+
+    private _text(sKey: string, aArgs?: any[]): string {
+        const oResourceModel = this.getOwnerComponent()?.getModel("i18n") as ResourceModel;
+        return oResourceModel?.getResourceBundle
+            ? (oResourceModel.getResourceBundle() as any).getText(sKey, aArgs)
+            : sKey;
     }
 
     private _nodeMatches(node: any, sQuery: string): boolean {

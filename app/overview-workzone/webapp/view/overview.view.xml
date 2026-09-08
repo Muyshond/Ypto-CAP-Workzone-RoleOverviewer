@@ -5,7 +5,7 @@
     xmlns:table="sap.ui.table"
     displayBlock="true">
 
-    <Page title="SAP Workzone - Role Hierarchy Analysis" class="sapUiResponsiveContentPadding">
+    <Page title="{i18n>pageTitle}" class="sapUiResponsiveContentPadding">
         <content>
             <VBox>
 
@@ -24,17 +24,17 @@
                                 size="1.5rem"
                                 class="sapUiSmallMarginEnd"/>
                             <VBox class="sapUiSmallMarginEnd" justifyContent="Center">
-                                <Title text="Workzone Environment" level="H5" style="color:#0057b8;"/>
+                                <Title text="{i18n>environmentPanelTitle}" level="H5" style="color:#0057b8;"/>
                             </VBox>
 
                             <VBox style="width:1px;height:2.5rem;background:#c5d9f0;margin:0 1.5rem;"/>
 
-                            <Label text="Environment" class="sapUiTinyMarginEnd" style="font-weight:600;color:#32363A;"/>
+                            <Label text="{i18n>environmentLabel}" class="sapUiTinyMarginEnd" style="font-weight:600;color:#32363A;"/>
                             <Select
                                 id="environmentSelect"
                                 width="110px"
                                 class="sapUiSmallMarginEnd"
-                                selectedKey="workzone-dev">
+                                selectedKey="dev">
                                 <items>
                                     <core:Item key="dev" text="DEV"/>
                                     <core:Item key="acc" text="ACC"/>
@@ -42,27 +42,27 @@
                                 </items>
                             </Select>
 
-                            <Label text="Site ID" class="sapUiTinyMarginEnd" style="font-weight:600;color:#32363A;"/>
+                            <Label text="{i18n>siteIdLabel}" class="sapUiTinyMarginEnd" style="font-weight:600;color:#32363A;"/>
                             <Input
                                 id="siteIdInput"
-                                placeholder="Site-ID"
+                                placeholder="{i18n>siteIdPlaceholder}"
                                 value="1af031d9-9029-49a0-9ab5-f880ce5118bb"
                                 width="24rem"
                                 class="sapUiSmallMarginEnd"
                                 submit=".onLoad"/>
 
                             <Button
-                                text="Load"
+                                text="{i18n>loadButton}"
                                 icon="sap-icon://synchronize"
                                 type="Emphasized"
                                 press=".onLoad"/>
                         </HBox>
                         <HBox >
-                            <Label text="Select your subaccount environment and enter the site-ID of that workzone" class="sapUiTinyMarginEnd" style="font-weight:600;color:#32363A;"/>
+                            <Label text="{i18n>environmentHint}" class="sapUiTinyMarginEnd" style="font-weight:600;color:#32363A;"/>
                         </HBox>
                         <HBox  >
                             <FormattedText id="siteIdHints" class="sapUiTinyMargin" htmlText="
-                                &lt;span style='font-size:0.85rem;font-weight:600;color:#5a7fa8;'&gt;Known Site IDs:&lt;/span&gt;&lt;br/&gt;
+                                &lt;span style='font-size:0.85rem;font-weight:600;color:#5a7fa8;'&gt;{i18n>knownSiteIdsTitle}:&lt;/span&gt;&lt;br/&gt;
                                 &lt;span style='font-size:0.85rem;color:#32363A;'&gt;DEV: 1af031d9-9029-49a0-9ab5-f880ce5118bb&lt;/span&gt;&lt;br/&gt;
                                 &lt;span style='font-size:0.85rem;color:#32363A;'&gt;ACC: —&lt;/span&gt;&lt;br/&gt;
                                 &lt;span style='font-size:0.85rem;color:#32363A;'&gt;PRD: —&lt;/span&gt;
@@ -79,14 +79,14 @@
                     <content>
                         <VBox>
 
-                            <Panel headerText="Statistics" style="border:none;border-bottom:1px solid #e4e4e4;border-radius:0;">
+                            <Panel headerText="{i18n>statisticsTitle}" style="border:none;border-bottom:1px solid #e4e4e4;border-radius:0;">
                                 <content>
                                     <HBox justifyContent="SpaceBetween" class="sapUiSmallMargin">
                                         <VBox class="sapUiSmallMarginEnd" width="24%">
                                             <HBox alignItems="Center" class="sapUiTinyMarginBottom">
                                                 <core:Icon src="sap-icon://role" color="#000000" size="2rem" class="sapUiTinyMarginEnd"/>
                                                 <VBox>
-                                                    <Text text="Roles" class="sapUiTinyText"/>
+                                                    <Text text="{i18n>statRoles}" class="sapUiTinyText"/>
                                                     <Title text="{/statistics/totalRoles}" level="H2"/>
                                                 </VBox>
                                             </HBox>
@@ -95,7 +95,7 @@
                                             <HBox alignItems="Center" class="sapUiTinyMarginBottom">
                                                 <core:Icon src="sap-icon://home" color="#0070F2" size="2rem" class="sapUiTinyMarginEnd"/>
                                                 <VBox>
-                                                    <Text text="Spaces" class="sapUiTinyText"/>
+                                                    <Text text="{i18n>statSpaces}" class="sapUiTinyText"/>
                                                     <Title text="{/statistics/totalSpaces}" level="H2"/>
                                                 </VBox>
                                             </HBox>
@@ -104,7 +104,7 @@
                                             <HBox alignItems="Center" class="sapUiTinyMarginBottom">
                                                 <core:Icon src="sap-icon://document" color="#6C6C6C" size="2rem" class="sapUiTinyMarginEnd"/>
                                                 <VBox>
-                                                    <Text text="Pages" class="sapUiTinyText"/>
+                                                    <Text text="{i18n>statPages}" class="sapUiTinyText"/>
                                                     <Title text="{/statistics/totalPages}" level="H2"/>
                                                 </VBox>
                                             </HBox>
@@ -113,7 +113,7 @@
                                             <HBox alignItems="Center" class="sapUiTinyMarginBottom">
                                                 <core:Icon src="sap-icon://product" color="#32363A" size="2rem" class="sapUiTinyMarginEnd"/>
                                                 <VBox>
-                                                    <Text text="Apps" class="sapUiTinyText"/>
+                                                    <Text text="{i18n>statApps}" class="sapUiTinyText"/>
                                                     <Title text="{/statistics/totalApps}" level="H2"/>
                                                 </VBox>
                                             </HBox>
@@ -140,28 +140,28 @@
                                 <table:extension>
                                     <SearchField
                                         id="searchField"
-                                        placeholder="Search by ID, Name, Type or Provider..."
+                                        placeholder="{i18n>searchPlaceholder}"
                                         search=".onSearch"
                                         liveChange=".onSearch"
                                         width="40%"
                                         showRefreshButton="true"/>
                                     <OverflowToolbar>
-                                        <Title text="Workzone Hierarchy" level="H3"/>
+                                        <Title text="{i18n>hierarchyTitle}" level="H3"/>
                                         <ToolbarSpacer/>
                                         <Button
                                             id="exportBtn"
-                                            text="Export to Excel"
+                                            text="{i18n>exportButton}"
                                             icon="sap-icon://download"
                                             type="Emphasized"
                                             press=".onExportToExcel"
-                                            tooltip="Export the full hierarchy to Excel"/>
+                                            tooltip="{i18n>exportButtonTooltip}"/>
                                     </OverflowToolbar>
                                 </table:extension>
 
                                 <table:columns>
 
                                     <table:Column width="30%" sortProperty="title" filterProperty="title">
-                                        <Label text="Name" design="Bold"/>
+                                        <Label text="{i18n>colName}" design="Bold"/>
                                         <table:template>
                                             <HBox alignItems="Center" class="{= ${highlighted} ? 'highlightedRow' : '' }">
                                                 <core:Icon
@@ -186,7 +186,7 @@
                                     </table:Column>
 
                                     <table:Column width="25%" sortProperty="id" filterProperty="id">
-                                        <Label text="ID" design="Bold"/>
+                                        <Label text="{i18n>colId}" design="Bold"/>
                                         <table:template>
                                             <FormattedText
                                                 htmlText="{
@@ -198,7 +198,7 @@
                                     </table:Column>
 
                                     <table:Column width="8%" hAlign="Center" sortProperty="type" filterProperty="type">
-                                        <Label text="Type" design="Bold"/>
+                                        <Label text="{i18n>colType}" design="Bold"/>
                                         <table:template>
                                             <ObjectStatus
                                                 text="{type}"
@@ -214,7 +214,7 @@
                                     </table:Column>
 
                                     <table:Column width="7%" hAlign="Center" sortProperty="spaceCount">
-                                        <Label text="Spaces" design="Bold"/>
+                                        <Label text="{i18n>colSpaces}" design="Bold"/>
                                         <table:template>
                                             <ObjectNumber
                                                 number="{spaceCount}"
@@ -225,7 +225,7 @@
                                     </table:Column>
 
                                     <table:Column width="7%" hAlign="Center" sortProperty="pageCount">
-                                        <Label text="Pages" design="Bold"/>
+                                        <Label text="{i18n>colPages}" design="Bold"/>
                                         <table:template>
                                             <ObjectNumber
                                                 number="{= ${type} === 'role' ? ${totalPages} : ${pageCount} }"
@@ -236,7 +236,7 @@
                                     </table:Column>
 
                                     <table:Column width="7%" hAlign="Center" sortProperty="appCount">
-                                        <Label text="Apps" design="Bold"/>
+                                        <Label text="{i18n>colApps}" design="Bold"/>
                                         <table:template>
                                             <ObjectNumber
                                                 number="{= ${type} === 'role' ? ${totalApps} : ${appCount} }"
@@ -247,7 +247,7 @@
                                     </table:Column>
 
                                     <table:Column sortProperty="providerId" filterProperty="providerId">
-                                        <Label text="Provider" design="Bold"/>
+                                        <Label text="{i18n>colProvider}" design="Bold"/>
                                         <table:template>
                                             <HBox visible="{= ${type} === 'role' }" alignItems="Center">
                                                 <core:Icon
